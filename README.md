@@ -1,5 +1,5 @@
 # MacroChaining
-MacroChaining is a FFXIV Dalamud plugin runs your macros in a loop
+MacroChaining is a FFXIV Dalamud plugin that runs your macros in a loop
 
 ## Installation
 ```
