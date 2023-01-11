@@ -37,10 +37,9 @@ namespace MacroChaining
         {
             pluginInterface.Create<Service>();
 
-            FFXIVClientStructs.Resolver.Initialize();
             try
             {
-                _mHook = Hook<MacroCallDelegate>.FromAddress(new IntPtr(RaptureShellModule.fpExecuteMacro), MacroCallDetour);
+                _mHook = Hook<MacroCallDelegate>.FromAddress(new IntPtr(RaptureShellModule.MemberFunctionPointers.ExecuteMacro), MacroCallDetour);
                 _mHook.Enable();
 
                 Service.CommandManager.AddHandler(LoopCommand, new CommandInfo(OnLoopCommand)

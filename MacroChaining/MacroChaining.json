@@ -4,6 +4,5 @@
   "InternalName": "MacroChaining",
   "Description": "Run multiple macros one after the another. Even in a loop.",
   "Punchline": "Run multiple macros one after the another. Even in a loop.",
-  "RepoUrl": "https://github.com/xPumaa/MacroChaining",
-  "DalamudApiLevel": 7
+  "RepoUrl": "https://github.com/xPumaa/MacroChaining"
 }
