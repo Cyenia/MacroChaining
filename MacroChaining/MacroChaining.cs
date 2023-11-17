@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Dalamud.Game;
 using Dalamud.Game.Command;
 using Dalamud.Hooking;
-using Dalamud.Logging;
 using Dalamud.Plugin;
+using Dalamud.Plugin.Services;
 using FFXIVClientStructs.FFXIV.Client.UI.Misc;
 using FFXIVClientStructs.FFXIV.Client.UI.Shell;
 
@@ -13,7 +12,7 @@ namespace MacroChaining
 {
     internal unsafe class MacroChaining : IDalamudPlugin
     {
-        public string Name => "Macro Chaining";
+        private static string Name => "Macro Chaining";
 
         private const string LoopCommand = "/mcloop";
         private const string RunCommand = "/mcrun";
@@ -39,7 +38,7 @@ namespace MacroChaining
 
             try
             {
-                _mHook = Hook<MacroCallDelegate>.FromAddress(new IntPtr(RaptureShellModule.MemberFunctionPointers.ExecuteMacro), MacroCallDetour);
+                _mHook = Service.HookProvider.HookFromAddress<MacroCallDelegate>(new IntPtr(RaptureShellModule.MemberFunctionPointers.ExecuteMacro), MacroCallDetour);
                 _mHook.Enable();
 
                 Service.CommandManager.AddHandler(LoopCommand, new CommandInfo(OnLoopCommand)
@@ -67,7 +66,7 @@ namespace MacroChaining
             }
             catch (Exception ex)
             {
-                PluginLog.LogError(ex.ToString());
+                Service.PluginLog.Error(ex.ToString());
             }
         }
 
@@ -86,14 +85,14 @@ namespace MacroChaining
             var macroChanged = false;
 
             _mHook?.Original(rSm, m);
-            if (RaptureShellModule.Instance->MacroLocked) return;
+            if (RaptureShellModule.Instance()->MacroLocked) return;
             _lastMacro = m;
 
             // up macro
-            for (var i = 0; i < 10; i++)
+            for (uint i = 0; i < 10; i++)
             {
-                if (_lastMacro != RaptureMacroModule.Instance->Shared[i] &&
-                    _lastMacro != RaptureMacroModule.Instance->Individual[i]) continue;
+                if (_lastMacro != RaptureMacroModule.Instance()->GetMacro(0, i) &&
+                    _lastMacro != RaptureMacroModule.Instance()->GetMacro(1, i)) continue;
                 _nextUp = m + 90;
                 macroChanged = true;
             }
@@ -102,10 +101,10 @@ namespace MacroChaining
             macroChanged = false;
 
             // down macro
-            for (var i = 90; i < 100; i++)
+            for (uint i = 90; i < 100; i++)
             {
-                if (_lastMacro != RaptureMacroModule.Instance->Shared[i] &&
-                    _lastMacro != RaptureMacroModule.Instance->Individual[i]) continue;
+                if (_lastMacro != RaptureMacroModule.Instance()->GetMacro(0, i) &&
+                    _lastMacro != RaptureMacroModule.Instance()->GetMacro(0, i)) continue;
                 _nextDown = m - 90;
                 macroChanged = true;
             }
@@ -113,8 +112,8 @@ namespace MacroChaining
             if (!macroChanged) _nextDown = m + 10;
 
             // left macro
-            if (_lastMacro == RaptureMacroModule.Instance->Shared[0] ||
-                _lastMacro == RaptureMacroModule.Instance->Individual[0])
+            if (_lastMacro == RaptureMacroModule.Instance()->GetMacro(0, 0) ||
+                _lastMacro == RaptureMacroModule.Instance()->GetMacro(1, 0))
             {
                 _nextLeft = m + 99;
             }
@@ -124,8 +123,8 @@ namespace MacroChaining
             }
 
             // right macro
-            if (_lastMacro == RaptureMacroModule.Instance->Shared[99] ||
-                _lastMacro == RaptureMacroModule.Instance->Individual[99])
+            if (_lastMacro == RaptureMacroModule.Instance()->GetMacro(1, 99) ||
+                _lastMacro == RaptureMacroModule.Instance()->GetMacro(0, 99))
             {
                 _nextRight = m - 99;
             }
@@ -141,15 +140,15 @@ namespace MacroChaining
             {
                 if (CheckMacroRequirements()) return;
 
-                RaptureShellModule.Instance->MacroLocked = false;
+                RaptureShellModule.Instance()->MacroLocked = false;
 
-                RaptureShellModule.Instance->ExecuteMacro(_lastMacro);
+                RaptureShellModule.Instance()->ExecuteMacro(_lastMacro);
                 
-                RaptureShellModule.Instance->MacroLocked = false;
+                RaptureShellModule.Instance()->MacroLocked = false;
             }
             catch (Exception ex)
             {
-                PluginLog.LogError(ex.ToString());
+                Service.PluginLog.Error(ex.ToString());
             }
         }
         
@@ -166,36 +165,36 @@ namespace MacroChaining
                                            "up - eg. #00 executes Macro #90\n                " +
                                            "down - eg. Macro #00 executes Macro #10";
 
-                RaptureShellModule.Instance->MacroLocked = false;
+                RaptureShellModule.Instance()->MacroLocked = false;
 
                 switch (args.ToLower())
                 {
                     case "up":
                     case "u":
-                        RaptureShellModule.Instance->ExecuteMacro(_nextUp);
+                        RaptureShellModule.Instance()->ExecuteMacro(_nextUp);
                         break;
                     case "down":
                     case "d":
-                        RaptureShellModule.Instance->ExecuteMacro(_nextDown);
+                        RaptureShellModule.Instance()->ExecuteMacro(_nextDown);
                         break;
                     case "left":
                     case "l":
-                        RaptureShellModule.Instance->ExecuteMacro(_nextLeft);
+                        RaptureShellModule.Instance()->ExecuteMacro(_nextLeft);
                         break;
                     case "right":
                     case "r":
-                        RaptureShellModule.Instance->ExecuteMacro(_nextRight);
+                        RaptureShellModule.Instance()->ExecuteMacro(_nextRight);
                         break;
                     default:
                         PrintChat(commandHelp);
                         break;
                 }
 
-                RaptureShellModule.Instance->MacroLocked = false;
+                RaptureShellModule.Instance()->MacroLocked = false;
             }
             catch (Exception ex)
             {
-                PluginLog.LogError(ex.ToString());
+                Service.PluginLog.Error(ex.ToString());
             }
         }
 
@@ -221,7 +220,7 @@ namespace MacroChaining
                 args = Regex.Replace(args, @"\s+", " ");
                 var split = args.Split(' ');
 
-                if (!int.TryParse(split[0], out var num) || num is > 99 or < 0)
+                if (!uint.TryParse(split[0], out var num) || num > 99)
                 {
                     PrintError("Invalid Macro number. (0-99)");
                     return;
@@ -233,13 +232,13 @@ namespace MacroChaining
                     case "share":
                     case "s":
                     {
-                        RaptureShellModule.Instance->ExecuteMacro(RaptureMacroModule.Instance->Shared[num]);
+                        RaptureShellModule.Instance()->ExecuteMacro(RaptureMacroModule.Instance()->GetMacro(1, num));
                         break;
                     }
                     case "individual":
                     case "i":
                     {
-                        RaptureShellModule.Instance->ExecuteMacro(RaptureMacroModule.Instance->Individual[num]);
+                        RaptureShellModule.Instance()->ExecuteMacro(RaptureMacroModule.Instance()->GetMacro(1, num));
                         break;
                     }
                     default:
@@ -251,7 +250,7 @@ namespace MacroChaining
             }
             catch (Exception ex)
             {
-                PluginLog.LogError(ex.ToString());
+                Service.PluginLog.Error(ex.ToString());
             }
         }
 
@@ -266,7 +265,7 @@ namespace MacroChaining
             _stopLoop = true;
         }
 
-        private void FrameworkUpdate(Framework framework)
+        private void FrameworkUpdate(IFramework framework)
         {
             if (_lastMacro == null) return;
 
@@ -278,7 +277,7 @@ namespace MacroChaining
                 return;
             }
 
-            if (RaptureShellModule.Instance->MacroCurrentLine >= 0)
+            if (RaptureShellModule.Instance()->MacroCurrentLine >= 0)
             {
                 _resetLastMacroTimer.Restart();
                 return;

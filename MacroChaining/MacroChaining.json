@@ -4,5 +4,6 @@
   "InternalName": "MacroChaining",
   "Description": "Run multiple macros one after the another. Even in a loop.",
   "Punchline": "Run multiple macros one after the another. Even in a loop.",
-  "RepoUrl": "https://github.com/xPumaa/MacroChaining"
+  "RepoUrl": "https://github.com/Cyeniia/MacroChaining",
+  "Changelog": "API9 update"
 }
