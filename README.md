@@ -3,7 +3,7 @@ MacroChaining is a FFXIV Dalamud plugin that runs your macros in a loop
 
 ## Installation
 ```
-https://raw.githubusercontent.com/Cyeniia/DalamudPlugins/main/pluginmaster.json
+https://raw.githubusercontent.com/Cyeniia/DalamudPlugins/master/pluginmaster.json
 ```
 * Copy the link above
 * Open your Plugin Installer Window and click Settings
