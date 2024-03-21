@@ -10,7 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Shell;
 
 namespace MacroChaining
 {
-    internal unsafe class MacroChaining : IDalamudPlugin
+    internal unsafe partial class MacroChaining : IDalamudPlugin
     {
         private static string Name => "Macro Chaining";
 
@@ -32,6 +32,9 @@ namespace MacroChaining
         private RaptureMacroModule.Macro* _nextLeft = null;
         private RaptureMacroModule.Macro* _nextRight = null;
 
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex Regex();
+        
         public MacroChaining(DalamudPluginInterface pluginInterface)
         {
             pluginInterface.Create<Service>();
@@ -217,7 +220,7 @@ namespace MacroChaining
                     return;
                 }
 
-                args = Regex.Replace(args, @"\s+", " ");
+                args = Regex().Replace(args, " ");
                 var split = args.Split(' ');
 
                 if (!uint.TryParse(split[0], out var num) || num > 99)
@@ -297,22 +300,20 @@ namespace MacroChaining
                 return true;
             }
 
-            if (_lastMacro != null && _stopLoop)
-            {
-                _stopLoop = false;
-                PrintError("Stopped loop");
-                return true;
-            }
+            if (_lastMacro == null || !_stopLoop) return false;
+            
+            _stopLoop = false;
+            PrintError("Stopped loop");
 
-            return false;
+            return true;
         }
         
-        private void PrintChat(string message)
+        private static void PrintChat(string message)
         {
             Service.Chat.Print($"[{Name}]: {message}");
         }
         
-        private void PrintError(string message)
+        private static void PrintError(string message)
         {
             Service.Chat.PrintError($"[{Name}]: {message}");
         }
