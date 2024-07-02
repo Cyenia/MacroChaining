@@ -35,7 +35,7 @@ namespace MacroChaining
         [GeneratedRegex(@"\s+")]
         private static partial Regex Regex();
         
-        public MacroChaining(DalamudPluginInterface pluginInterface)
+        public MacroChaining(IDalamudPluginInterface pluginInterface)
         {
             pluginInterface.Create<Service>();
 
