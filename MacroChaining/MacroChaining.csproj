@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Dalamud.NET.Sdk/11.0.0">
     <PropertyGroup Label="Target">
         <AssemblyName>MacroChaining</AssemblyName>
         <TargetFramework>net8.0-windows</TargetFramework>
@@ -8,27 +8,11 @@
         <Platforms>x64</Platforms>
         <LangVersion>latest</LangVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <Version>1.7.0.0</Version>
+        <Version>1.7.1.0</Version>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <GenerateDependencyFile>false</GenerateDependencyFile>
         <DebugType>None</DebugType>
     </PropertyGroup>
-
-    <PropertyGroup>
-        <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev</DalamudLibPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="DalamudPackager" Version="2.1.13" />
-        <Reference Include="Dalamud">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\Dalamud.dll</HintPath>
-        </Reference>
-        <Reference Include="FFXIVClientStructs">
-            <Private>false</Private>
-            <HintPath>$(DalamudLibPath)\FFXIVClientStructs.dll</HintPath>
-        </Reference>
-    </ItemGroup>
 </Project>

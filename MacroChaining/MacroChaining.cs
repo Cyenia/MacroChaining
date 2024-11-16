@@ -23,7 +23,7 @@ namespace MacroChaining
 
         private delegate void MacroCallDelegate(RaptureShellModule* rSm, RaptureMacroModule.Macro* m);
 
-        private readonly Hook<MacroCallDelegate> _mHook;
+        private readonly Hook<MacroCallDelegate>? _mHook;
         private RaptureMacroModule.Macro* _lastMacro = null;
         private readonly Stopwatch _resetLastMacroTimer = new();
 
